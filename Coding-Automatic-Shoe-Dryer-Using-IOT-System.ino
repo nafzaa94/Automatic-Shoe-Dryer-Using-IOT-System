@@ -49,9 +49,11 @@ DHT dht(DHTPIN, DHTTYPE);
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
-int ButtonManual = 9;
+int ButtonManualOn = 9;
+int ButtonManualOff = 10;
 
-int ValueButtonManual = 0;
+int ValueButtonManualOn = 0;
+int ValueButtonManualOff = 0;
 
 int ValuePowerOnOff = 0;
 
@@ -94,14 +96,26 @@ void myTimerEvent(){
 
   RTC.read(tm);
 
-  ValueButtonManual = digitalRead(ButtonManual);
+  ValueButtonManualOn = digitalRead(ButtonManualOn);
+  ValueButtonManualOff = digitalRead(ButtonManualOff);
 
-  if (ValueButtonManual == LOW){
+  if (ValueButtonManualOn == LOW){
     datastart = 1;
+    digitalWrite(relaylamp2, LOW);
+    digitalWrite(relaylamp3, HIGH);
+    }
+
+  if (ValueButtonManualOff == LOW){
+    datastart = 0;
+    digitalWrite(relaylamp2, HIGH);
+    digitalWrite(relaylamp3, LOW);
     }
 
   if (datastart == 1){
     Var = 1;
+    }
+  else if (datastart == 0){
+    Var = 0;
     }
 
   hum = dht.readHumidity();
@@ -110,8 +124,6 @@ void myTimerEvent(){
   switch (Var) {
     case 1:
       digitalWrite(relaylamp1, LOW);
-      digitalWrite(relaylamp2, LOW);
-      digitalWrite(relaylamp3, LOW);
       digitalWrite(relaykipas, LOW);
       digitalWrite(signalmotor1, HIGH);
       digitalWrite(signalmotor2, LOW);
@@ -132,7 +144,7 @@ void myTimerEvent(){
         statetimer = 1;
       }
 
-      TimerDisplay = (Hour * 60 + Min) - (HourOff * 60 + MinOff);
+      TimerDisplay = (HourOff * 60 + MinOff) - (Hour * 60 + Min);
       
       lcd.setCursor(0, 9);
       lcd.print("     ");
@@ -147,8 +159,6 @@ void myTimerEvent(){
 
       if (Hour == HourOff && Min == MinOff){
         digitalWrite(relaylamp1, HIGH);
-        digitalWrite(relaylamp2, HIGH);
-        digitalWrite(relaylamp3, HIGH);
         digitalWrite(relaykipas, HIGH);
         digitalWrite(signalmotor1, LOW);
         digitalWrite(signalmotor2, LOW);
@@ -178,7 +188,8 @@ void setup()
   pinMode(relaykipas, OUTPUT);
   pinMode(signalmotor1, OUTPUT);
   pinMode(signalmotor2, OUTPUT);
-  pinMode(ButtonManual, INPUT_PULLUP);
+  pinMode(ButtonManualOn, INPUT_PULLUP);
+  pinMode(ButtonManualOff, INPUT_PULLUP);
 
   digitalWrite(relaylamp1, HIGH);
   digitalWrite(relaylamp2, HIGH);
